@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.alfred.datasync.mapper.PointMapper">
+    <resultMap id="BaseResultMap" type="com.alfred.datasync.entity.Point">
+        <id column="pointId" property="pointId" jdbcType="INTEGER"/>
+        <result column="availablePoints" property="availablePoints" jdbcType="DECIMAL"/>
+        <result column="frozenPoints" property="frozenPoints" jdbcType="DECIMAL"/>
+        <result column="version" property="version" jdbcType="INTEGER"/>
+        <result column="user_" property="user" jdbcType="INTEGER"/>
+        <result column="last_update_time" property="lastUpdateTime" jdbcType="TIMESTAMP"/>
+        <result column="delayUpdateMode" property="delayUpdateMode" jdbcType="TINYINT"/>
+        <result column="latest_point_log_id" property="latestPointLogId" jdbcType="INTEGER"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    pointId, availablePoints, frozenPoints, version, user_, last_update_time, delayUpdateMode,
+    latest_point_log_id
+  </sql>
+
+
+    <insert id="insertBatch">
+    INSERT into point (availablePoints,frozenPoints,version,user_,last_update_time,delayUpdateMode,latest_point_log_id)
+                VALUES
+            <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.availablePoints,jdbcType=DECIMAL},#{item.frozenPoints,jdbcType=DECIMAL},#{item.version,jdbcType=INTEGER},
+            #{item.user,jdbcType=INTEGER},#{item.lastUpdateTime,jdbcType=TIMESTAMP},#{item.delayUpdateMode,jdbcType=TINYINT},
+            #{item.latestPointLogId,jdbcType=INTEGER})
+            </foreach>
+    </insert>
+
+    <select id="getMaxPointId" resultType="java.lang.Long">
+    SELECT max(pointId) FROM point
+    </select>
+
+</mapper>
