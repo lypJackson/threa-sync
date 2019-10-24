@@ -11,24 +11,37 @@
         <result column="delayUpdateMode" property="delayUpdateMode" jdbcType="TINYINT"/>
         <result column="latest_point_log_id" property="latestPointLogId" jdbcType="INTEGER"/>
     </resultMap>
+
+    <resultMap id="PointIdMaxAndMinResultMap" type="com.alfred.datasync.dataobject.PointIdMaxAndMinDO">
+        <id column="pointIdMax" property="pointIdMax" jdbcType="INTEGER"/>
+        <id column="pointIdMin" property="pointIdMin" jdbcType="INTEGER"/>
+    </resultMap>
+
     <sql id="Base_Column_List">
     pointId, availablePoints, frozenPoints, version, user_, last_update_time, delayUpdateMode,
     latest_point_log_id
-  </sql>
+    </sql>
 
 
     <insert id="insertBatch">
-    INSERT into point (availablePoints,frozenPoints,version,user_,last_update_time,delayUpdateMode,latest_point_log_id)
-                VALUES
-            <foreach collection="list" item="item" index="index" separator=",">
+        INSERT into point
+        (availablePoints,frozenPoints,version,user_,last_update_time,delayUpdateMode,latest_point_log_id)
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
             (#{item.availablePoints,jdbcType=DECIMAL},#{item.frozenPoints,jdbcType=DECIMAL},#{item.version,jdbcType=INTEGER},
             #{item.user,jdbcType=INTEGER},#{item.lastUpdateTime,jdbcType=TIMESTAMP},#{item.delayUpdateMode,jdbcType=TINYINT},
             #{item.latestPointLogId,jdbcType=INTEGER})
-            </foreach>
+        </foreach>
     </insert>
 
-    <select id="getMaxPointId" resultType="java.lang.Long">
-    SELECT max(pointId) FROM point
+    <select id="getMaxAndMinPointId" resultMap="PointIdMaxAndMinResultMap">
+        SELECT min(pointId) pointIdMin,max(pointId) pointIdMax FROM point where date_format(last_update_time,'%Y%m%d')=#{day,jdbcType=VARCHAR}
+    </select>
+
+    <select id="queryAllByPointId" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from point where pointId BETWEEN #{start,jdbcType=BIGINT} and #{end,jdbcType=BIGINT}
     </select>
 
 </mapper>

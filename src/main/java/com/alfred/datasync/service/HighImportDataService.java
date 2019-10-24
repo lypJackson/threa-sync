@@ -1,5 +1,9 @@
 package com.alfred.datasync.service;
 
+import com.alfred.datasync.entity.ImportDataStep;
+
+import java.util.List;
+
 public interface HighImportDataService {
     /**
      * 数据同步预处理：
@@ -9,6 +13,10 @@ public interface HighImportDataService {
      * @param day
      */
     void dataSyncPrehandle(String day);
+
+    void recordHandleImport(String day);
+
+    void insertPointTaskStep(List<ImportDataStep> steps);
 
 
 }

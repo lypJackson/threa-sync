@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.geekq.highimporttry.mapper.ImportDataTaskDao">
-    <resultMap id="BaseResultMap" type="com.geekq.highimporttry.entity.ImportDataTask">
+<mapper namespace="com.alfred.datasync.mapper.ImportDataTaskMapper">
+    <resultMap id="BaseResultMap" type="com.alfred.datasync.entity.ImportDataTask">
         <id column="id" jdbcType="INTEGER" property="id"/>
         <result column="day" jdbcType="VARCHAR" property="day"/>
         <result column="type" jdbcType="VARCHAR" property="type"/>
@@ -17,6 +17,22 @@
 
     <select id="queryTodayTaskIsImport" resultType="java.lang.Integer">
         select count(*) from import_data_task where day=#{day,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="insert" parameterType="com.alfred.datasync.entity.ImportDataTask">
+        <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into import_data_task (day,type,status,create_time,update_time,version)
+        values
+        (#{day,jdbcType=VARCHAR},#{type,jdbcType=VARCHAR},#{status,jdbcType=INTEGER},#{createTime,jdbcType=TIMESTAMP},
+        #{updateTime,jdbcType=TIMESTAMP},#{version,jdbcType=INTEGER})
+    </insert>
+
+    <select id="queryTaskDatas" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from import_data_task where type=#{type,jdbcType=VARCHAR} and day=#{day,jdbcType=VARCHAR}
     </select>
 
 </mapper>

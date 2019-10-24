@@ -1,7 +1,9 @@
 package com.alfred.datasync.threasync;
 
+import com.alfred.datasync.ThreasyncApplication;
 import com.alfred.datasync.entity.Point;
 import com.alfred.datasync.mapper.PointMapper;
+import com.alfred.datasync.timer.TimerRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +20,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(classes = ThreasyncApplication.class)
 @EnableAutoConfiguration
 public class ThreasyncApplicationTests {
 
@@ -26,21 +28,31 @@ public class ThreasyncApplicationTests {
     private PointMapper pointMapper;
 
 
+    @Autowired
+    private TimerRunner timerRunner;
 
+    @Test
+    public void importAll() {
 
-
-
+        try {
+            timerRunner.timeGo();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
 
     private int threadCount = 5; //子线程数
 
-    private CountDownLatch countDownLatch = new CountDownLatch(threadCount) ;
+    private CountDownLatch countDownLatch = new CountDownLatch(threadCount);
+
     /**
      * 多线程插入测试数据入口
+     *
      * @throws InterruptedException
      */
     @Test
-    public void createBatchData() throws InterruptedException{
+    public void createBatchData() throws InterruptedException {
         /**
          * https://cloud.tencent.com/developer/article/1404322
          * io密集型：估算公式 【CPU核数/1-阻塞系数】其中阻塞系数在0.8-0.9之间
@@ -50,9 +62,9 @@ public class ThreasyncApplicationTests {
             executorService.execute(new Runnable() {
                 @Override
                 public void run() {
-                    try{
+                    try {
                         ArrayList<Point> points = new ArrayList<>();
-                        for (int j = 0; j <5000 ; j++) {
+                        for (int j = 0; j < 5000; j++) {
                             Point point = new Point()
                                     .setUser(ThreadLocalRandom.current().nextInt(900000000))
                                     .setAvailablePoints(new BigDecimal(10000))
@@ -64,7 +76,7 @@ public class ThreasyncApplicationTests {
                             points.add(point);
                         }
                         pointMapper.insertBatch(points);
-                    }finally {
+                    } finally {
                         countDownLatch.countDown();
                     }
 

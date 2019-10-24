@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.alfred.datasync.mapper.ImportDataStepMapper">
+    <resultMap id="BaseResultMap" type="com.alfred.datasync.entity.ImportDataStep">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="task_id" jdbcType="INTEGER" property="taskId"/>
+        <result column="range_start" jdbcType="BIGINT" property="rangeStart"/>
+        <result column="range_end" jdbcType="BIGINT" property="rangeEnd"/>
+        <result column="day" jdbcType="VARCHAR" property="day"/>
+        <result column="type" jdbcType="VARCHAR" property="type"/>
+        <result column="status" jdbcType="INTEGER" property="status"/>
+        <result column="msg" jdbcType="VARCHAR" property="msg"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        <result column="version" jdbcType="INTEGER" property="version"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    id, task_id, range_start, range_end, day, type, status, msg, create_time, update_time,
+    version
+  </sql>
+
+    <insert id="insertBatch" parameterType="java.util.List">
+        INSERT INTO import_data_step (task_id,range_start,range_end,day,type,status,msg,create_time,update_time,version)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.taskId,jdbcType=INTEGER},#{item.rangeStart,jdbcType=BIGINT},#{item.rangeEnd,jdbcType=BIGINT},#{item.day,jdbcType=VARCHAR},
+            #{item.type,jdbcType=VARCHAR},#{item.status,jdbcType=INTEGER},#{item.msg,jdbcType=VARCHAR},#{item.createTime,jdbcType=TIMESTAMP},
+            #{item.updateTime,jdbcType=TIMESTAMP},#{item.version,jdbcType=INTEGER})
+        </foreach>
+    </insert>
+
+    <select id="queryTodayStepIsImportSuccess" resultType="java.lang.Integer">
+        select count(*) from import_data_step where status in(0,2) and day=#{day,jdbcType=VARCHAR}
+    </select>
+
+    <select id="queryAllStepNotDealAndFail" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from import_data_step where day=#{day,jdbcType=VARCHAR} task_id=#{taskId,jdbcType=INTEGER} and status in (0,2)
+    </select>
+
+</mapper>
