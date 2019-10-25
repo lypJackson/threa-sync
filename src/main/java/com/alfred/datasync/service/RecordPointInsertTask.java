@@ -42,15 +42,16 @@ public class RecordPointInsertTask implements Runnable {
              */
             final int ReTryTime = 10;
             int handleTime = 0;
-            List<ImportDataStep> steps = importDataStepMapper.queryAllStepNotDealAndFail(importDataTask.getId(),
-                    day, Constant.IMPORTTYPE.point.name());
-            if (CollectionUtils.isEmpty(steps)) {
-                break;
+            while (handleTime<ReTryTime){
+                List<ImportDataStep> steps = importDataStepMapper.queryAllStepNotDealAndFail(importDataTask.getId(),
+                        day, Constant.IMPORTTYPE.point.name());
+                if (CollectionUtils.isEmpty(steps)) {
+                    break;
+                }
+                log.info("point handleTime 重试：{}", handleTime);
+                highImportDataService.insertPointTaskStep(steps);
+                handleTime++;
             }
-            log.info("point handleTime 重试：{}", handleTime);
-            highImportDataService.insertPointTaskStep(steps);
-            handleTime++;
-
         }
         long end = System.currentTimeMillis();
         log.info("end ------>> point批量处理结束！耗时 time：{},ms", end - start);

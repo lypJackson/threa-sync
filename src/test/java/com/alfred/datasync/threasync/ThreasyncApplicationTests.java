@@ -64,7 +64,7 @@ public class ThreasyncApplicationTests {
                 public void run() {
                     try {
                         ArrayList<Point> points = new ArrayList<>();
-                        for (int j = 0; j < 5000; j++) {
+                        for (int j = 0; j < 50; j++) {
                             Point point = new Point()
                                     .setUser(ThreadLocalRandom.current().nextInt(900000000))
                                     .setAvailablePoints(new BigDecimal(10000))

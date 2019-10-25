@@ -36,7 +36,13 @@
     <select id="queryAllStepNotDealAndFail" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>
-        from import_data_step where day=#{day,jdbcType=VARCHAR} task_id=#{taskId,jdbcType=INTEGER} and status in (0,2)
+        from import_data_step where day=#{day,jdbcType=VARCHAR} and task_id=#{taskId,jdbcType=INTEGER} and status in
+        (0,2)
     </select>
+
+    <update id="updateByStepId">
+        update import_data_step set status=#{status,jdbcType=INTEGER},update_time=#{updateTime,jdbcType=TIMESTAMP},version=version+1
+        where id=#{id,jdbcType=INTEGER}
+    </update>
 
 </mapper>

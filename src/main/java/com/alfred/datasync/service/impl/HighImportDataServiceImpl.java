@@ -6,10 +6,12 @@ import com.alfred.datasync.entity.ImportDataTask;
 import com.alfred.datasync.entity.Point;
 import com.alfred.datasync.mapper.ImportDataStepMapper;
 import com.alfred.datasync.mapper.ImportDataTaskMapper;
+import com.alfred.datasync.mapper.ImportPointMapper;
 import com.alfred.datasync.mapper.PointMapper;
 import com.alfred.datasync.service.HighImportDataService;
 import com.alfred.datasync.service.RecordPointInsertTask;
 import com.alfred.datasync.util.Constant;
+import com.alfred.datasync.util.DateUtil;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -35,6 +38,9 @@ public class HighImportDataServiceImpl implements HighImportDataService {
 
     @Autowired
     private ImportDataStepMapper stepMapper;
+
+    @Autowired
+    private ImportPointMapper importPointMapper;
 
     @Autowired
     private PlatformTransactionManager transactionManager;
@@ -220,11 +226,41 @@ public class HighImportDataServiceImpl implements HighImportDataService {
             try {
                 log.info("start  point 批量插入处理！rangeStart:{} rangeEnd:{}", step.getRangeStart(), step.getRangeEnd());
                 List<Point> points = pointMapper.queryAllByPointId(step.getRangeStart(), step.getRangeEnd());
+                String yMonth = DateUtil.formatCompactMonthDate(DateUtil.parse(step.getDay()));
 
+                //手动事物
+                DefaultTransactionDefinition definition = new DefaultTransactionDefinition();
+                TransactionStatus transaction = transactionManager.getTransaction(definition);
+                try {
+                    if (!CollectionUtils.isEmpty(points)) {
+                        log.info("start insert batch!!!");
+                        int flag = importPointMapper.insertBatch(points, "import_point_" +
+                                yMonth, step.getDay(), new Date());
+                        if (flag > 0) {
+                            //本次同步成功修改状态
+                            taskMapper.updateByTaskId(step.getTaskId(), Constant.IMPORT_SUCCESS, new Date());
+                            stepMapper.updateByStepId(step.getId(), Constant.IMPORT_SUCCESS, new Date());
+                        } else {
+                            //本次同步失败修改状态
+                            taskMapper.updateByTaskId(step.getTaskId(), Constant.IMPORT_FAIL, new Date());
+                            stepMapper.updateByStepId(step.getId(), Constant.IMPORT_FAIL, new Date());
+                        }
+                    } else {
+                        //没有数据
+                        taskMapper.updateByTaskId(step.getTaskId(), Constant.IMPORT_RANGE_NO_DATA, new Date());
+                        stepMapper.updateByStepId(step.getId(), Constant.IMPORT_RANGE_NO_DATA, new Date());
+                        log.info("point rangeStart:{} rangeEnd:{} 范围无数据！！！", step.getRangeStart(), step.getRangeEnd());
+                    }
+                    //手动提交事物
+                    transactionManager.commit(transaction);
 
+                } catch (Exception e) {
+                    log.error("数据插入失败！!回滚");
+                    transactionManager.rollback(transaction);
+                }
 
             } catch (Exception e) {
-
+                log.error("数据插入失败！！回滚！！此次失败的批次 {} , {} error:{}", step.getRangeStart(), step.getRangeEnd(), e);
             }
         }
 

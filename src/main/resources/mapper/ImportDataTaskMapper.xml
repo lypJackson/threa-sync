@@ -35,4 +35,9 @@
         from import_data_task where type=#{type,jdbcType=VARCHAR} and day=#{day,jdbcType=VARCHAR}
     </select>
 
+    <update id="updateByTaskId">
+        update import_data_task set status=#{status,jdbcType=INTEGER},update_time=#{updateTime,jdbcType=TIMESTAMP},version=version+1
+        where id=#{id,jdbcType=INTEGER}
+    </update>
+
 </mapper>

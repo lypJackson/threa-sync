@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.alfred.datasync.mapper.ImportPointMapper">
+    <resultMap id="BaseResultMap" type="com.alfred.datasync.entity.ImportPoint">
+        <id column="day" property="day" jdbcType="VARCHAR"/>
+        <id column="userId" property="userid" jdbcType="INTEGER"/>
+        <result column="availablePoints" property="availablepoints" jdbcType="DECIMAL"/>
+        <result column="frozenPoints" property="frozenpoints" jdbcType="DECIMAL"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        day, userId, availablePoints, frozenPoints, create_time
+    </sql>
+
+    <insert id="insertBatch">
+        insert into ${table}(day,userId,availablePoints,frozenPoints, create_time)values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (${day},#{item.user,jdbcType=INTEGER},#{item.availablePoints,jdbcType=DECIMAL},#{item.frozenPoints,jdbcType=DECIMAL},#{createTime})
+        </foreach>
+    </insert>
+</mapper>

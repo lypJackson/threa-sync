@@ -1,10 +1,10 @@
 package com.alfred.datasync.mapper;
 
 import com.alfred.datasync.entity.ImportDataTask;
-import com.alfred.datasync.util.Constant;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.List;
 
 @Repository
@@ -19,5 +19,7 @@ public interface ImportDataTaskMapper {
 
     int insert(ImportDataTask dataTask);
 
-    List<ImportDataTask> queryTaskDatas(@Param("type") String type,@Param("day") String day);
+    List<ImportDataTask> queryTaskDatas(@Param("type") String type, @Param("day") String day);
+
+    void updateByTaskId(@Param("id") Integer id, @Param("status") Integer status, @Param("updateTime") Date updateTime);
 }
